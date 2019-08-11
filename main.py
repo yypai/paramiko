@@ -7,10 +7,10 @@ folder L3 has the files to be grabbed:
 
 scratch/folderL2/folderL3/*input.in 
 '''
-import paramiko
+import paramiko         #SFTP
 import ipywidgets as widgets
 import os
-import stat
+import stat             #Tell if an item is folder or file
 host = ""                   
 port = 22
 transport = paramiko.Transport((host, port))
@@ -33,7 +33,7 @@ display(folderL2)
 def printTotals(transferred, toBeTransferred):
     print ("Transferred (MB): {0:.2f} Out of: {1:.2f}".format(transferred/1e6, toBeTransferred/1e6), end='\r')
     
-    
+            
 folderL3_List = []
 for item in sftp.listdir('scratch/' + folderL2.value):
     if stat.S_ISDIR(sftp.lstat('scratch/' + folderL2.value + '/' + item).st_mode):
