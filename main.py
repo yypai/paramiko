@@ -20,8 +20,6 @@ transport.connect(username = username, password = password)
 sftp = paramiko.SFTPClient.from_transport(transport)
 
 # for Jupyter Notebook
-
-
 folderL2 =  widgets.Select(
             options=sorted(sftp.listdir('scratch/')),
             rows=8,
