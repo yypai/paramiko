@@ -1,3 +1,8 @@
+# Make sure to ssh into the aci-b first 
+# I haven't figure how to resolve "keyboard interactive" failure. 
+# I added an handler but got authentication error in the end.
+
+
 '''
 Simple script that grabs all the files with keyword in folders within a folder. 
 
