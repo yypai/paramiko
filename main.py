@@ -36,38 +36,80 @@ display(folderL2)
 
 
 def printTotals(transferred, toBeTransferred):
-    print ("Transferred (MB): {0:.2f} Out of: {1:.2f}".format(transferred/1e6, toBeTransferred/1e6), end='\r')
-    
-            
-folderL3_List = []
-for item in sftp.listdir('scratch/' + folderL2.value):
-    if stat.S_ISDIR(sftp.lstat('scratch/' + folderL2.value + '/' + item).st_mode):
-        folderL3_List = folderL3_List + [item]
-folderL3_List = sorted(folderL3_List)
-
+    print ("-----Transferred (MB): {0:.2f} Out of: {1:.2f}".format(transferred/1e6, toBeTransferred/1e6), 
+           end='\r')
 
 def aci_get(match, f2, f3List, overwrite):
     for folder3 in f3List:
         match = match
-        filePathServer = ['/'.join(['scratch', f2, folder3, file]) \
+        filePathPSU = ['/'.join(['scratch', f2, folder3, file]) \
                       for file in sorted(sftp.listdir('scratch/' + f2 + '/' + folder3))\
                        if match in file]
         
-        folderPathMac = '/Volumes/Deneb/PF/SrTiO3Simulations/' + f2 + '/' + folder3 + '/'
+        folderPathMac = '/Volumes/Arcturus/Expt/PSU/STO/' + f2 + '/' + folder3 + '/'
 
+#        folderPathMac = '/Users/yun-yi/Desktop/' + f2 + '/' + folder3 + '/'
+    
+    
         if os.path.exists(folderPathMac):
-            print('Export folder exists')
+            print('Folder:',  folderPathMac, ' exists.')
         else:
             os.mkdir(folderPathMac)
+            print('Folder:', folderPathMac, ' created.')
 
-        filePathMac = [folderPathMac + file.split('/')[-1] for file in filePathServer]
+        filePathMac = [folderPathMac + file.split('/')[-1] for file in filePathPSU]
 
-        for i in range(len(filePathServer)):
-            print(filePathServer[i], end='\r')
+        for i in range(len(filePathPSU)):
+            print('-----Processing', i, 'of', len(filePathPSU), filePathPSU[i])
             if os.path.exists(filePathMac[i]) and overwrite == False:
-                print('local file exists:', filePathMac[i])
+                print('-----File:', filePathMac[i], ' exists\n')
             else: 
-                sftp.get(filePathServer[i], filePathMac[i], callback=printTotals)
+                sftp.get(filePathPSU[i], filePathMac[i], callback=printTotals)
+                print('-----File:', filePathMac[i], ' downloaded\n')
+
+def aci_get_last(match, f2, f3List, overwrite):
+    for folder3 in f3List:
+        match = match
+        filePathPSU = ['/'.join(['scratch', f2, folder3, file]) \
+                      for file in sorted(sftp.listdir('scratch/' + f2 + '/' + folder3))\
+                       if match in file]
+        
+        folderPathMac = '/Volumes/Arcturus/Expt/PSU/STO/' + f2 + '/' + folder3 + '/'
+#        folderPathMac = '/Users/yun-yi/Desktop/' + f2 + '/' + folder3 + '/'
+        
+        if os.path.exists(folderPathMac):
+            print('Folder:',  folderPathMac, ' exists.')
+        else:
+            os.mkdir(folderPathMac)
+            print('Folder:', folderPathMac, ' created.')
+
+        filePathPSU = filePathPSU[-1:]
+        filePathMac = [folderPathMac + file.split('/')[-1] for file in filePathPSU]
+
+        
+        for i in range(len(filePathPSU)):
+            print('-----Processing', i, 'of', len(filePathPSU), filePathPSU[i])
+            if os.path.exists(filePathMac[i]) and overwrite == False:
+                print('-----File:', filePathMac[i], ' exists\n')
+            else: 
+                sftp.get(filePathPSU[i], filePathMac[i], callback=printTotals)
+                print('-----File:', filePathMac[i], ' downloaded\n')
                 
-# example                
+# example 1              
 aci_get("input.in", folderL2.value, folderL3_List, True)
+
+
+# example 2
+%%time
+for pattern in ["input.in", "pot.in", ".pbs", "energy_out.dat", ".o"]:
+    print(pattern)
+    aci_get(pattern, folderL2.value, folderL3_List, False)
+
+for pattern in ["energy_out.dat"]:
+    print(pattern)
+    aci_get(pattern, folderL2.value, folderL3_List, True)
+
+aci_get_last("OctaTilt.0", folderL2.value, folderL3_List, True)
+aci_get_last("Polar", folderL2.value, folderL3_List, True)
+aci_get_last("Strain", folderL2.value, folderL3_List, True)
+
